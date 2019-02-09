@@ -180,6 +180,48 @@ def get_use_data(url):
             # if retry < 0:
             ips = get_ips()
 
+def get_data_header(url, headers):
+    global proxy
+    if not proxy:
+        proxy = Proxy()
+    success = True
+    retry = 3
+    ips = proxy.get_ip()
+    # log_url.info(url)
+    while success:
+        try:
+            retry -= 1
+            resp = requests.get(url, headers=headers, proxies={'http': ips}, timeout=15, allow_redirects=False)
+            # resp = requests.get(url, headers=headers, timeout=6)
+            if resp.status_code == 302:
+                # nerr = check(resp.content.decode(), url)
+                nerr = True
+                if nerr:
+                    usedConn.sadd('useful', ips)
+                    usedConn.delete(url)
+                    return resp
+                else:
+                    proxy.remove(ips)
+                    log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                    ips = proxy.get_ip()
+            print(resp.status_code)
+            log.info(resp.status_code)
+            # if retry < 0:
+            ips = proxy.get_ip()
+        except ReadTimeout:
+            print('timeout')
+        except (MaxRetryError, ProxyError,
+                ConnectTimeout, TooManyRedirects, ConnectionError):
+            proxy.remove(ips)
+            log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
+            ips = proxy.get_ip()
+        except:
+            # print(e)
+            # log.exception(e)
+            # log.info(ips)
+            # if retry < 0:
+            ips = proxy.get_ip()
+
 
 
 if __name__ == '__main__':
@@ -189,7 +231,9 @@ if __name__ == '__main__':
     # urls = get_urls().find()[60000:60010]
     # for url in urls:
     #     print(get_data(url['url']).text)
-    try:
-        requests.get("djjjkks")
-    except:
-        pass
+    # try:
+    #     requests.get("djjjkks")
+    # except:
+    #     pass
+    resp = get_data('http://baike.molbase.cn/cidian/35609?search_keyword=67287-36-9&page=1&per_page=10')
+    print(resp.status_code)
