@@ -49,6 +49,7 @@ def parse(resp):
                 dt[func.__name__] = res
         # print(dt)
         save(dt)
+        print(dt)
     except DuplicateKeyError:
         flag = False
     except IndexError as e:
@@ -60,7 +61,16 @@ def parse(resp):
         # err().insert_many([{'url': url, 'msg': str(e)}])
         log.exception(e)
 
+import pickle
+
+def import_data():
+    datas = pickle.load(open('add_url.pickle', 'rb'))
+    for url in list(datas)[:3]:
+        resp = get_data(url)
+        parse(resp)
+        print()
+
 
 if __name__ == '__main__':
-    search('67287-36-9')
+    import_data()
 

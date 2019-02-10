@@ -118,7 +118,7 @@ def sds(content):
 def msds(content):
     eles = etree.HTML(content)
     msds = filter(eles.xpath('//div[@id="msds"]'))
-    if msds:
+    if len(msds)>0:
         msds = etree.tostring(msds, encoding="utf-8").decode()
         return msds
     else:
@@ -128,7 +128,7 @@ def msds(content):
 def haiguan(content):
     eles = etree.HTML(content)
     t1 = filter(eles.xpath('//div[@id="t1"]'))
-    if t1:
+    if len(t1)>0:
         content = etree.tostring(t1).decode()
         return content
     else:
