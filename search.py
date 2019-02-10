@@ -68,7 +68,7 @@ def import_data():
     for url in list(datas)[:3]:
         resp = get_data(url)
         parse(resp)
-        print()
+        # print(url)
 
 
 if __name__ == '__main__':
