@@ -7,7 +7,7 @@
 from parse import funcs
 from proxy import get_data, get_proxy_ip
 from log import get_log
-from db import get_urls, db, err
+from db import get_urls, db, err, cn_check_dbs
 from multiprocessing import Process, Queue
 import random
 from pymongo.errors import DuplicateKeyError
@@ -97,7 +97,7 @@ def save(item):
     props['item'] = item
     # print(props)
     log.info('          * {} *          '.format(item['url']))
-    db().insert_many([props])
+    cn_check_dbs().insert_many([props])
 
 import uuid
 import requests
