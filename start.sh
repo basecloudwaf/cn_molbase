@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-nohup python run_cn.py &
+nohup python check.py &

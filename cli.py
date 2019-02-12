@@ -9,6 +9,7 @@ from redis import StrictRedis
 from db import err
 
 log = get_log('proxy')
+err_log = get_log('err_log')
 # log_url = get_log('urls')
 
 
@@ -115,7 +116,9 @@ def get_data(url):
                     proxy.remove(ips)
                     log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
                     ips = proxy.get_ip()
-            print(resp.status_code)
+            # print(resp.status_code)
+            err_log.info(resp.status_code)
+            err_log.info(resp.url)
             log.info(resp.status_code)
             # if retry < 0:
             ips = proxy.get_ip()
@@ -162,6 +165,8 @@ def get_use_data(url):
                     usedConn.srem('useful', ips)
                     log.info("^^^^^  remove {} +++++{}++++".format(ips, url))
                     ips = get_ips()
+            err_log.info(resp.status_code)
+            err_log.info(resp.url)
             print(resp.status_code)
             log.info(resp.status_code)
             # if retry < 0:
@@ -204,6 +209,9 @@ def get_data_header(url, headers):
                     proxy.remove(ips)
                     log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
                     ips = proxy.get_ip()
+            else:
+                err_log.info(resp.status_code)
+                err_log.info(resp.url)
             print(resp.status_code)
             log.info(resp.status_code)
             # if retry < 0:

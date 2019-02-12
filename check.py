@@ -69,7 +69,9 @@ def engin(line):
     count = 0
     queues = [Queue() for i in range(line)]
     ps = [Process(target=process, args=(queue,)) for queue in queues[25:]]
+    # ps = [Process(target=process, args=(queue,)) for queue in queues[:1]]
     pss = [Process(target=process_user, args=(queue,)) for queue in queues[:25]]
+    # pss = [Process(target=process_user, args=(queue,)) for queue in queues[:-1]]
     for index, p in enumerate(ps):
         p.start()
         pss[index].start()
@@ -80,18 +82,19 @@ def engin(line):
             msg = en_datas.next()
             count += 1
             print(count)
-            flag = dbs.find_one({'url': msg['CAS']})
-            rep = cn_dbs.find_one({'url': msg['CAS']})
+            flag = dbs.find_one({'url': msg['cas']})
+            rep = cn_dbs.find_one({'url': msg['cas']})
             if flag and rep:
                 # print(msg['url'])
                 continue
-            random.choice(queues).put(msg['CAS'])
+            random.choice(queues).put(msg['cas'])
             # time.sleep(500)
         except StopIteration:
             # for p in ps:
             #     p.join()
             time.sleep(500)
         except:
+            # print(e)
             # log.exception(e)
             print('err, main')
             en_datas = get_en_data().find()[count:]
@@ -99,3 +102,6 @@ def engin(line):
 
 if __name__ == '__main__':
     engin(50)
+    # en_datas = get_en_data().find()
+    # msg = en_datas.next()
+    # print(msg)

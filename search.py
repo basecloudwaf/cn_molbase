@@ -43,8 +43,9 @@ def search_use(cas):
     resp = get_data_header('http://www.molbase.cn/new/baike/?keyword=%s'%cas, headers)
     url = resp.headers['location']
     resp = get_use_data('http:%s'%url)
-    print(resp.text)
-    parse(resp)
+    # print(resp.text)
+    # parse(resp)
+    return resp
 
 def parse(resp):
     try:
