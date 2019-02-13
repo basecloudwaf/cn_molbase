@@ -67,7 +67,7 @@ def engin(line):
     dbs = db()
     cn_dbs = cn_check_dbs()
     count = 0
-    queues = [Queue() for i in range(line)]
+    queues = [Queue(30) for i in range(line)]
     ps = [Process(target=process, args=(queue,)) for queue in queues[25:]]
     # ps = [Process(target=process, args=(queue,)) for queue in queues[:1]]
     pss = [Process(target=process_user, args=(queue,)) for queue in queues[:25]]
