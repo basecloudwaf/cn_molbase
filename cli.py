@@ -50,7 +50,7 @@ class Proxy:
         self.used += 1
         log.info("pid: {} , used: {}, length: {}, ***** {} %".format(os.getpid(),self.used, len(self.pools), self.used/len(self.pools)*100))
         if self.used > len(self.pools)/10:
-            self.fetcher = ProxyFetcher('https', strategy='greedy', redis_args=args)
+            # self.fetcher = ProxyFetcher('http', strategy='greedy', redis_args=args)
             self.pools = self.fetcher.get_proxies()
             self.used = 0
             log.info("""
@@ -113,9 +113,10 @@ def get_data(url):
                     usedConn.delete(url)
                     return resp
                 else:
-                    proxy.remove(ips)
-                    log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
-                    ips = proxy.get_ip()
+                    if retry < 0:
+                        proxy.remove(ips)
+                        log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                        ips = proxy.get_ip()
             # print(resp.status_code)
             err_log.info(resp.status_code)
             err_log.info(resp.url)
@@ -133,8 +134,10 @@ def get_data(url):
             # print(e)
             # log.exception(e)
             # log.info(ips)
-            # if retry < 0:
-            ips = proxy.get_ip()
+            if retry < 0:
+                proxy.remove(ips)
+                log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                ips = proxy.get_ip()
 
 def get_ips():
     ips = usedConn.srandmember('useful')
@@ -161,29 +164,33 @@ def get_use_data(url):
                 if nerr:
                     usedConn.delete(url)
                     return resp
-                else:
-                    usedConn.srem('useful', ips)
-                    log.info("^^^^^  remove {} +++++{}++++".format(ips, url))
-                    ips = get_ips()
+
             err_log.info(resp.status_code)
             err_log.info(resp.url)
             print(resp.status_code)
             log.info(resp.status_code)
             # if retry < 0:
-            ips = get_ips()
+            if retry < 0:
+                usedConn.srem('useful', ips)
+                log.info("^^^^^  remove {} +++++{}++++".format(ips, url))
+                ips = get_ips()
         except ReadTimeout:
             print('timeout')
         except (MaxRetryError, ProxyError,
                 ConnectTimeout, TooManyRedirects, ConnectionError):
-            usedConn.srem('useful', ips)
-            log.info("====  remove {} ===={}====".format(ips, url))
-            ips = get_ips()
+            if retry < 0:
+                usedConn.srem('useful', ips)
+                log.info("====  remove {} ===={}====".format(ips, url))
+                ips = get_ips()
         except:
             # print(e)
             # log.exception(e)
             # log.info(ips)
             # if retry < 0:
-            ips = get_ips()
+            if retry < 0:
+                usedConn.srem('useful', ips)
+                log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                ips = get_ips()
 
 def get_data_header(url, headers):
     global proxy
@@ -205,31 +212,63 @@ def get_data_header(url, headers):
                     usedConn.sadd('useful', ips)
                     usedConn.delete(url)
                     return resp
-                else:
-                    proxy.remove(ips)
-                    log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
-                    ips = proxy.get_ip()
+                # else:
+                #     proxy.remove(ips)
+                #     log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                #     ips = proxy.get_ip()
             else:
                 err_log.info(resp.status_code)
                 err_log.info(resp.url)
             print(resp.status_code)
             log.info(resp.status_code)
-            # if retry < 0:
-            ips = proxy.get_ip()
+            if retry < 0:
+                ips = proxy.get_ip()
         except ReadTimeout:
             print('timeout')
         except (MaxRetryError, ProxyError,
                 ConnectTimeout, TooManyRedirects, ConnectionError):
-            proxy.remove(ips)
-            log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
-            ips = proxy.get_ip()
+            if retry < 0:
+                proxy.remove(ips)
+                log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                ips = proxy.get_ip()
         except:
             # print(e)
             # log.exception(e)
             # log.info(ips)
-            # if retry < 0:
-            ips = proxy.get_ip()
+            if retry < 0:
+                proxy.remove(ips)
+                log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                ips = proxy.get_ip()
 
+
+def get_c_data(url):
+    success = True
+    while success:
+        try:
+            resp = requests.get(url, headers=headers, proxies={'http': '222.186.44.10:4321'}, timeout=15, allow_redirects=False)
+            # resp = requests.get(url, headers=headers, timeout=6)
+            if resp.status_code == 200:
+                # nerr = check(resp.content.decode(), url)
+                return resp
+            else:
+                log.info('222.186.44.10:4321*** status{}'.format(resp.status_code))
+            # else:
+            #     err_log.info(resp.status_code)
+            #     err_log.info(resp.url)
+            # print(resp.status_code)
+            # log.info(resp.status_code)
+        except ReadTimeout:
+            print('timeout')
+        except (MaxRetryError, ProxyError,
+                ConnectTimeout, TooManyRedirects, ConnectionError):
+            # log.info('222.186.44.10:4321+++++++++failed')
+            pass
+        except:
+            # print(e)
+            # log.exception(e)
+            # log.info(ips)
+            # log.info('222.186.44.10:4321+++++++++failed')
+            pass
 
 
 if __name__ == '__main__':

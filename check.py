@@ -5,7 +5,7 @@ import random
 import time
 from cli import get_use_data, get_data
 from log import get_log
-from search import search, search_use
+from search import search, search_use, search_c
 from parse import funcs
 from run_cn import save
 from pymongo.errors import DuplicateKeyError
@@ -43,7 +43,7 @@ def process(queue):
     while True:
         try:
             dt = queue.get(True, timeout=3)
-            resp = get_data(dt)
+            resp = search(dt)
             parse(resp)
         except Empty:
             pass
@@ -62,19 +62,35 @@ def process_user(queue):
         except Exception as e:
             log.exception(e)
 
+def process_c(queue):
+    print('line start')
+    while True:
+        try:
+            dt = queue.get(True, timeout=3)
+            resp = search_c(dt)
+            parse(resp)
+        except Empty:
+            pass
+        except Exception as e:
+            log.exception(e)
+
 def engin(line):
     # messages = get_urls().find()
-    dbs = db()
+    # dbs = db()
     cn_dbs = cn_check_dbs()
     count = 0
-    queues = [Queue(30) for i in range(line)]
-    ps = [Process(target=process, args=(queue,)) for queue in queues[25:]]
+    queues = [Queue() for i in range(line)]
+    ps = [Process(target=process, args=(queue,)) for queue in queues[20:]]
     # ps = [Process(target=process, args=(queue,)) for queue in queues[:1]]
-    pss = [Process(target=process_user, args=(queue,)) for queue in queues[:25]]
+    pss = [Process(target=process_user, args=(queue,)) for queue in queues[20:40]]
+    psc = [Process(target=process_c, args=(queue,)) for queue in queues[10:]]
     # pss = [Process(target=process_user, args=(queue,)) for queue in queues[:-1]]
     for index, p in enumerate(ps):
         p.start()
-        pss[index].start()
+    for ps in pss:
+        ps.start()
+    for pc in psc:
+        pc.start()
     en_datas = get_en_data().find()
     print('enginstart')
     while True:
@@ -82,11 +98,12 @@ def engin(line):
             msg = en_datas.next()
             count += 1
             print(count)
-            flag = dbs.find_one({'url': msg['cas']})
-            rep = cn_dbs.find_one({'url': msg['cas']})
-            if flag and rep:
+            # flag = dbs.find_one({'CAS ': msg['cas']})
+            rep = cn_dbs.find_one({'CAS ': msg['cas']})
+            if rep:
                 # print(msg['url'])
                 continue
+            # log.info(msg['cas'])
             random.choice(queues).put(msg['cas'])
             # time.sleep(500)
         except StopIteration:

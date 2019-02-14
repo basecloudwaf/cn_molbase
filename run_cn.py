@@ -80,6 +80,8 @@ def parse_use(msg):
             log.exception(e)
             flag = False
 
+dds = cn_check_dbs()
+
 def save(item):
     # print(item)
     img_url = item['product_info']['product_img']
@@ -96,8 +98,9 @@ def save(item):
             props[key] = val
     props['item'] = item
     # print(props)
+    dds.insert_many([props])
     log.info('          * {} *          '.format(item['url']))
-    cn_check_dbs().insert_many([props])
+
 
 import uuid
 import requests

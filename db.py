@@ -31,3 +31,8 @@ def cn_check_dbs():
                                  authMechanism='DEFAULT')
     db = client.Data
     return db.cn_olbase_sup
+
+
+if __name__ == '__main__':
+    a = cn_check_dbs().find_one({'CAS ': '613225-56-2'})
+    # print(a)

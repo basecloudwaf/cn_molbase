@@ -1,5 +1,5 @@
 import requests
-from cli import get_data, get_data_header, get_use_data
+from cli import get_data, get_data_header, get_use_data,get_c_data
 from parse import funcs
 from pymongo.errors import DuplicateKeyError
 from log import get_log
@@ -43,6 +43,14 @@ def search_use(cas):
     resp = get_data_header('http://www.molbase.cn/new/baike/?keyword=%s'%cas, headers)
     url = resp.headers['location']
     resp = get_use_data('http:%s'%url)
+    # print(resp.text)
+    # parse(resp)
+    return resp
+
+def search_c(cas):
+    resp = get_data_header('http://www.molbase.cn/new/baike/?keyword=%s'%cas, headers)
+    url = resp.headers['location']
+    resp = get_c_data('http:%s'%url)
     # print(resp.text)
     # parse(resp)
     return resp
@@ -109,6 +117,7 @@ def process_user(queue):
             pass
         except Exception as e:
             log.exception(e)
+
 
 def engin(line):
     # messages = get_urls().find()
