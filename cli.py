@@ -207,11 +207,9 @@ def get_data_header(url, headers):
             # resp = requests.get(url, headers=headers, timeout=6)
             if resp.status_code == 302:
                 # nerr = check(resp.content.decode(), url)
-                nerr = True
-                if nerr:
-                    usedConn.sadd('useful', ips)
-                    usedConn.delete(url)
-                    return resp
+                usedConn.sadd('useful', ips)
+                usedConn.delete(url)
+                return resp
                 # else:
                 #     proxy.remove(ips)
                 #     log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
@@ -275,14 +273,14 @@ def get_c_data(url):
 
 if __name__ == '__main__':
     # import sentry_sdk
-    # sentry_sdk.init("https://34a7992a425e4144a9f4f1eadd193278@sentry.io/1355103")
-    # from db import get_urls
-    # urls = get_urls().find()[60000:60010]
-    # for url in urls:
-    #     print(get_data(url['url']).text)
-    # try:
-    #     requests.get("djjjkks")
-    # except:
-    #     pass
+    #     # sentry_sdk.init("https://34a7992a425e4144a9f4f1eadd193278@sentry.io/1355103")
+    #     # from db import get_urls
+    #     # urls = get_urls().find()[60000:60010]
+    #     # for url in urls:
+    #     #     print(get_data(url['url']).text)
+    #     # try:
+    #     #     requests.get("djjjkks")
+    #     # except:
+    #     #     pass
     resp = get_data('http://baike.molbase.cn/cidian/35609?search_keyword=67287-36-9&page=1&per_page=10')
     print(resp.status_code)
