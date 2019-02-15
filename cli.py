@@ -44,11 +44,11 @@ class Proxy:
     def __init__(self):
         self.fetcher = ProxyFetcher('https', strategy='greedy', redis_args=args)
         self.pools = self.fetcher.get_proxies()
-        self.used = 0
+        self.used = 1
 
     def get_ip(self):
         self.used += 1
-        log.info("pid: {} , used: {}, length: {}, ***** {} %".format(os.getpid(),self.used, len(self.pools), self.used/len(self.pools)*100))
+        log.info("pid: {} , used: {}, length: {}, ***** {} %".format(os.getpid(),self.used, len(self.pools), self.used/(len(self.pools)+1)*100))
         if self.used > len(self.pools)/10:
             # self.fetcher = ProxyFetcher('http', strategy='greedy', redis_args=args)
             self.pools = self.fetcher.get_proxies()
@@ -103,19 +103,19 @@ def get_data(url):
     while success:
         try:
             retry -= 1
-            resp = requests.get(url, headers=headers, proxies={'http': ips}, timeout=15)
+            resp = requests.get(url, headers=headers, proxies={'http': ips}, timeout=15, allow_redirects=False)
             # resp = requests.get(url, headers=headers, timeout=6)
             if resp.status_code == 200:
                 # nerr = check(resp.content.decode(), url)
                 nerr = True
                 if nerr:
                     usedConn.sadd('useful', ips)
-                    usedConn.delete(url)
+                    # usedConn.delete(url)
                     return resp
                 else:
                     if retry < 0:
-                        proxy.remove(ips)
-                        log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                        # proxy.remove(ips)
+                        # log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
                         ips = proxy.get_ip()
             # print(resp.status_code)
             err_log.info(resp.status_code)
@@ -127,16 +127,16 @@ def get_data(url):
             print('timeout')
         except (MaxRetryError, ProxyError,
                 ConnectTimeout, TooManyRedirects, ConnectionError):
-            proxy.remove(ips)
-            log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
+            # proxy.remove(ips)
+            # log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
             ips = proxy.get_ip()
         except:
             # print(e)
             # log.exception(e)
             # log.info(ips)
             if retry < 0:
-                proxy.remove(ips)
-                log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                # proxy.remove(ips)
+                # log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
                 ips = proxy.get_ip()
 
 def get_ips():
@@ -157,7 +157,7 @@ def get_use_data(url):
             if not ips:
                 time.sleep(20)
                 continue
-            resp = requests.get(url, headers=headers, proxies={'http': ips}, timeout=15)
+            resp = requests.get(url, headers=headers, proxies={'http': ips}, timeout=15, allow_redirects=False)
             # resp = requests.get(url, headers=headers, timeout=6)
             if resp.status_code == 200:
                 nerr = check(resp.content.decode(), url)
@@ -216,6 +216,8 @@ def get_data_header(url, headers):
                 #     proxy.remove(ips)
                 #     log.info("^^{}^^^  remove {} +++++{}++++".format(os.getpid(), ips, url))
                 #     ips = proxy.get_ip()
+            if resp.status_code == 200:
+                return
             else:
                 err_log.info(resp.status_code)
                 err_log.info(resp.url)
@@ -228,16 +230,16 @@ def get_data_header(url, headers):
         except (MaxRetryError, ProxyError,
                 ConnectTimeout, TooManyRedirects, ConnectionError):
             if retry < 0:
-                proxy.remove(ips)
-                log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                # proxy.remove(ips)
+                # log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
                 ips = proxy.get_ip()
         except:
             # print(e)
             # log.exception(e)
             # log.info(ips)
             if retry < 0:
-                proxy.remove(ips)
-                log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
+                # proxy.remove(ips)
+                # log.info("++{}++  remove {} +++++{}++++".format(os.getpid(), ips, url))
                 ips = proxy.get_ip()
 
 

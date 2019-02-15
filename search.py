@@ -33,6 +33,8 @@ log = get_log('molbase')
 
 def search(cas):
     resp = get_data_header('http://www.molbase.cn/new/baike/?keyword=%s'%cas, headers)
+    if not resp:
+        return
     url = resp.headers['location']
     resp = get_data('http:%s'%url)
     # print(resp.text)
@@ -41,6 +43,8 @@ def search(cas):
 
 def search_use(cas):
     resp = get_data_header('http://www.molbase.cn/new/baike/?keyword=%s'%cas, headers)
+    if not resp:
+        return
     url = resp.headers['location']
     resp = get_use_data('http:%s'%url)
     # print(resp.text)
@@ -49,6 +53,8 @@ def search_use(cas):
 
 def search_c(cas):
     resp = get_data_header('http://www.molbase.cn/new/baike/?keyword=%s'%cas, headers)
+    if not resp:
+        return
     url = resp.headers['location']
     resp = get_c_data('http:%s'%url)
     # print(resp.text)

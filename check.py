@@ -26,7 +26,7 @@ def parse(resp):
                 dt[func.__name__] = res
         # print(dt)
         save(dt)
-        print(dt)
+        # print(dt)
     except DuplicateKeyError:
         flag = False
     except IndexError as e:
@@ -44,6 +44,8 @@ def process(queue):
         try:
             dt = queue.get(True, timeout=3)
             resp = search(dt)
+            if not resp:
+                return
             parse(resp)
         except Empty:
             pass
@@ -56,6 +58,8 @@ def process_user(queue):
         try:
             dt = queue.get(True, timeout=3)
             resp = search_use(dt)
+            if not resp:
+                return
             parse(resp)
         except Empty:
             pass
@@ -68,6 +72,8 @@ def process_c(queue):
         try:
             dt = queue.get(True, timeout=3)
             resp = search_c(dt)
+            if not resp:
+                return
             parse(resp)
         except Empty:
             pass
